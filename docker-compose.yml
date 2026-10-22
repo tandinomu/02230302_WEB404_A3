@@ -1,0 +1,30 @@
+# docker-compose.yml
+# Runs a simple PHP + Apache web server for the file-upload lab, LOCAL only.
+#
+# Why each line matters (useful for the viva):
+services:
+  web:
+    # Official PHP image with Apache built in. PHP runs by default anywhere
+    # under the web root — which is exactly what makes the vulnerable version
+    # dangerous, and what we lock down in the secure version.
+    image: php:8.3-apache
+
+    container_name: a3-upload
+
+    ports:
+      # Publish Apache's port 80 ONLY on this machine's loopback as :4281.
+      # Binding to 127.0.0.1 (not 0.0.0.0) is the ethical control: the
+      # deliberately-vulnerable app is not reachable from the network/internet.
+      - "127.0.0.1:4281:80"
+
+    volumes:
+      # ./www is the web root (URL-reachable).  Everything here can be requested
+      # in the browser, and .php files here are EXECUTED by Apache.
+      - ./www:/var/www/html
+
+      # ./storage is mounted OUTSIDE the web root (/var/uploads, not under
+      # /var/www/html). The secure uploader saves files here, so there is no
+      # URL that could ever execute them. This is a key defence in step 4.
+      - ./storage:/var/uploads
+
+    restart: unless-stopped
