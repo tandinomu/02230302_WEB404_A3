@@ -12,5 +12,7 @@ viva_notes.md
 # (We never want to commit a web shell or test upload.)
 www/vulnerable/uploads/*
 !www/vulnerable/uploads/.gitkeep
+www/exec-disabled-demo/*
+!www/exec-disabled-demo/.gitkeep
 storage/*
 !storage/.gitkeep

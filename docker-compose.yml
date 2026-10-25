@@ -31,4 +31,8 @@ services:
       # the common real-world setup used in the extension-blacklist attack.
       - ./apache/php-extra-extensions.conf:/etc/apache2/conf-enabled/zz-php-extra.conf:ro
 
+      # Hardening demo: disable PHP execution inside one upload directory,
+      # showing the "folder where execution is disabled" defence (step 4).
+      - ./apache/disable-exec-uploads.conf:/etc/apache2/conf-enabled/zz-disable-exec.conf:ro
+
     restart: unless-stopped
