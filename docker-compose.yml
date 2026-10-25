@@ -27,4 +27,8 @@ services:
       # URL that could ever execute them. This is a key defence in step 4.
       - ./storage:/var/uploads
 
+      # Extra Apache config: also execute .phtml / .php5 as PHP, to reproduce
+      # the common real-world setup used in the extension-blacklist attack.
+      - ./apache/php-extra-extensions.conf:/etc/apache2/conf-enabled/zz-php-extra.conf:ro
+
     restart: unless-stopped
