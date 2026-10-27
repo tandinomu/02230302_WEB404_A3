@@ -1,29 +1,29 @@
-# WEB404 — Assignment 3: Secure File Upload
+# WEB404: Assignment 3: Secure File Upload
 
 **Module:** WEB404 Secure Coding Practices
 **Task:** Develop a file upload feature and implement security measures to prevent malicious file uploads.
 **Student ID:** 02230302
 
-This project builds the *same* file-upload feature twice — once deliberately
+This project builds the *same* file-upload feature twice, once deliberately
 **insecure**, to demonstrate the attacks, and once **secure**, implementing the
 defences that stop each attack. Everything runs locally in Docker, bound to
 `127.0.0.1`, and no external system is ever touched.
 
 ---
 
-## Overview — what this assignment does and how
+## Overview: what this assignment does and how
 
 This assignment builds a file upload feature and secures it against malicious
 uploads.
 
 The approach has three stages:
 
-1. **Build an insecure uploader** — one that saves any uploaded file, under the
+1. **Build an insecure uploader**: one that saves any uploaded file, under the
    attacker's chosen name, into a web-accessible folder.
-2. **Attack it** — four attacks: upload and run a PHP web shell (Remote Code
+2. **Attack it**: four attacks: upload and run a PHP web shell (Remote Code
    Execution), bypass a naive `Content-Type` check, bypass a naive extension
    blacklist, and the magic-bytes/polyglot problem.
-3. **Secure it** — rebuild the feature with seven layered defences (whitelist,
+3. **Secure it**: rebuild the feature with seven layered defences (whitelist,
    real content check, random rename, store outside the web root, etc.), and
    show every earlier attack now failing.
 
@@ -34,7 +34,7 @@ file be executed.**
 
 ## Table of contents
 
-0. [Overview](#overview--what-this-assignment-does-and-how)
+0. [Overview](#overview-what-this-assignment-does-and-how)
 1. [Introduction: why file uploads are dangerous](#1-introduction-why-file-uploads-are-dangerous)
 2. [Lab setup and ethical considerations](#2-lab-setup-and-ethical-considerations)
 3. [The vulnerable version and the attacks](#3-the-vulnerable-version-and-the-attacks)
@@ -63,16 +63,16 @@ and cross-site scripting via uploaded HTML/SVG.
 
 ### OWASP / CWE references
 
-- **CWE-434: Unrestricted Upload of File with Dangerous Type** — the exact
+- **CWE-434: Unrestricted Upload of File with Dangerous Type**: the exact
   weakness this assignment is about.
-- **OWASP Top 10 (2021) A04:2021 – Insecure Design** — accepting any file is a
+- **OWASP Top 10 (2021) A04:2021, Insecure Design**: accepting any file is a
   design-level failure to think about abuse.
-- **OWASP Top 10 (2021) A03:2021 – Injection** — an executed upload is code
+- **OWASP Top 10 (2021) A03:2021, Injection**: an executed upload is code
   injected into the server.
-- **OWASP Top 10 (2021) A05:2021 – Security Misconfiguration** — a server
+- **OWASP Top 10 (2021) A05:2021, Security Misconfiguration**: a server
   configured to execute files in an upload directory.
 - **OWASP File Upload Cheat Sheet** and **WSTG-BUSL-09 (Test Upload of
-  Malicious Files)** — the defensive guidance applied in Section 4.
+  Malicious Files)**, the defensive guidance applied in Section 4.
 
 ---
 
@@ -102,7 +102,7 @@ Then open `http://127.0.0.1:4281/` in a browser.
 
 - **Local only.** In `docker-compose.yml` the port is published as
   `127.0.0.1:4281:80`, **not** `0.0.0.0`. Binding to the loopback address means
-  the deliberately-vulnerable app is reachable **only from this machine** — it
+  the deliberately-vulnerable app is reachable **only from this machine**, it
   is never exposed to the network or the internet.
 - **No external targets.** Every attack in this report is run against a
   local container only. No third-party system is scanned or attacked.
@@ -137,12 +137,12 @@ To make the later attacks realistic, the lab also includes two "looks-secure
 but isn't" variants, and configures Apache to also execute `.phtml`/`.php5`
 (a very common real-world setting; the stock image only runs `.php`):
 
-- `www/vulnerable/naive_type.php` — trusts the browser-supplied `Content-Type`.
-- `www/vulnerable/naive_blacklist.php` — blocks a list of bad extensions.
+- `www/vulnerable/naive_type.php`, trusts the browser-supplied `Content-Type`.
+- `www/vulnerable/naive_blacklist.php`, blocks a list of bad extensions.
 
 ---
 
-### 3.1 Attack 1 — Upload and execute a PHP web shell
+### 3.1 Attack 1: Upload and execute a PHP web shell
 
 **The payload** (`shell.php`):
 
@@ -180,11 +180,11 @@ requesting the file *ran* it. One unchecked upload = full Remote Code Execution.
 
 ---
 
-### 3.2 Attack 2 — Bypass a naive `Content-Type` check
+### 3.2 Attack 2: Bypass a naive `Content-Type` check
 
 Target: `naive_type.php`, which only accepts the upload if
 `$_FILES['file']['type']` is `image/jpeg` or `image/png`. That value is just the
-`Content-Type` **the client put in the request** — PHP never verifies it.
+`Content-Type` **the client put in the request**, PHP never verifies it.
 
 **Steps:**
 
@@ -201,7 +201,7 @@ curl -F "file=@shell.php;filename=typebypass.php;type=image/png" \
 curl "http://127.0.0.1:4281/vulnerable/uploads/typebypass.php?cmd=id"
 ```
 
-> [SCREENSHOT: terminal — honest upload REJECTED, spoofed image/png ACCEPTED, cmd=id returns uid=33]
+> [SCREENSHOT: terminal, honest upload REJECTED, spoofed image/png ACCEPTED, cmd=id returns uid=33]
 > `screenshots/05-contenttype-bypass.png`
 
 **Why it worked:** the `;type=image/png` part sets the request's `Content-Type`
@@ -214,10 +214,10 @@ and must never be trusted. Real defence reads the file's actual bytes.
 
 ---
 
-### 3.3 Attack 3 — Bypass a naive extension blacklist
+### 3.3 Attack 3: Bypass a naive extension blacklist
 
 Target: `naive_blacklist.php`, which blocks
-`php, php3, php4, php5, phar` — but **forgets `.phtml`**.
+`php, php3, php4, php5, phar`, but **forgets `.phtml`**.
 
 **Steps:**
 
@@ -237,7 +237,7 @@ curl -F "file=@shell.php;filename=bl_double.php.jpg" \
 curl "http://127.0.0.1:4281/vulnerable/uploads/bl_double.php.jpg?cmd=id"
 ```
 
-> [SCREENSHOT: terminal — .php rejected, .phtml accepted + uid=33, .php.jpg accepted but returns source]
+> [SCREENSHOT: terminal, .php rejected, .phtml accepted + uid=33, .php.jpg accepted but returns source]
 > `screenshots/06-blacklist-bypass.png`
 
 **Why it worked / what it shows:**
@@ -250,14 +250,14 @@ curl "http://127.0.0.1:4281/vulnerable/uploads/bl_double.php.jpg?cmd=id"
 - **Important nuance:** `shell.php.jpg` *does* achieve RCE on servers using the
   legacy `AddHandler application/x-httpd-php .php` directive, which executes any
   filename *containing* `.php`. The double-extension risk is therefore real but
-  server-config-dependent — a strong reason to also disable execution in the
+  server-config-dependent, a strong reason to also disable execution in the
   upload directory (Section 4).
 
 **Lesson:** use a **whitelist** ("only allow these"), never a blacklist.
 
 ---
 
-### 3.4 Attack 4 — Magic bytes vs the claimed type
+### 3.4 Attack 4: Magic bytes vs the claimed type
 
 "Magic bytes" are the first bytes of a file that reveal its true type (a PNG
 starts with `\x89PNG`, a GIF with `GIF89a`). PHP's `finfo` reads them.
@@ -268,7 +268,7 @@ starts with `\x89PNG`, a GIF with `GIF89a`). PHP's `finfo` reads them.
 #   polyglot.gif -> image/gif    (magic bytes were forged: GIF89a then PHP)
 ```
 
-> [SCREENSHOT: terminal — xxd byte dumps and finfo real-vs-claimed MIME types]
+> [SCREENSHOT: terminal, xxd byte dumps and finfo real-vs-claimed MIME types]
 > `screenshots/07-magic-bytes.png`
 
 **What this shows:**
@@ -278,7 +278,7 @@ starts with `\x89PNG`, a GIF with `GIF89a`). PHP's `finfo` reads them.
    inspection beats trusting the header.
 2. But a *polyglot* that truly begins with `GIF89a` is reported as `image/gif`
    by `finfo` even though it hides PHP. So content inspection alone is not
-   enough — the design must also whitelist extensions, rename files, and prevent
+   enough, the design must also whitelist extensions, rename files, and prevent
    execution. This motivates the layered design in Section 4.
 
 ---
@@ -317,7 +317,7 @@ move_uploaded_file($f['tmp_name'], '/var/uploads/' . $safeName);  // outside web
 Files are stored outside the web root, so they are served back through a small
 guarded script, `www/secure/view.php`, which accepts only the server's own random-name
 pattern (also blocking path traversal), sets a fixed `Content-Type`, adds
-`X-Content-Type-Options: nosniff`, and uses `readfile` — it never executes.
+`X-Content-Type-Options: nosniff`, and uses `readfile`, so it never executes.
 
 ### 4.1 A genuine image is accepted
 
@@ -327,24 +327,24 @@ A real PNG is accepted, renamed randomly, and stored outside the web root:
 ACCEPTED. Stored outside the web root as: 2e5d7fb8…034.png
 ```
 
-> [SCREENSHOT: browser — secure uploader accepting a real image, showing the random stored name and view.php link]
+> [SCREENSHOT: browser, secure uploader accepting a real image, showing the random stored name and view.php link]
 > `screenshots/08-secure-accept-image.png`
 >
-> [SCREENSHOT: optional — the image served back safely via view.php]
+> [SCREENSHOT: optional, the image served back safely via view.php]
 > `screenshots/09-secure-view-image.png`
 
 ### 4.2 Every earlier attack now fails
 
 | Attack | Result against the secure uploader |
 |--------|------------------------------------|
-| `shell.php` web shell | **REJECTED** — extension not on whitelist |
-| `Content-Type: image/png` spoof on `.php` | **REJECTED** — real content `text/x-php` ≠ `.png` |
-| `.phtml` blacklist bypass | **REJECTED** — extension not on whitelist |
-| GIF/PHP polyglot as `.gif` or `.png` | **REJECTED** — ext not allowed / content mismatch |
-| Oversize (3 MB) file | **REJECTED** — size limit (enforced at two levels) |
+| `shell.php` web shell | **REJECTED**: extension not on whitelist |
+| `Content-Type: image/png` spoof on `.php` | **REJECTED**: real content `text/x-php` ≠ `.png` |
+| `.phtml` blacklist bypass | **REJECTED**: extension not on whitelist |
+| GIF/PHP polyglot as `.gif` or `.png` | **REJECTED**: ext not allowed / content mismatch |
+| Oversize (3 MB) file | **REJECTED**: size limit (enforced at two levels) |
 | Valid-PNG **+ appended PHP** | **ACCEPTED, but neutralised** (see below) |
 
-> [SCREENSHOT: terminal — all attacks REJECTED by the secure uploader]
+> [SCREENSHOT: terminal, all attacks REJECTED by the secure uploader]
 > `screenshots/10-secure-attacks-rejected.png`
 
 **The neutralised case (most important point).** A file with real PNG magic
@@ -352,9 +352,9 @@ bytes *and* PHP appended passes the content check (its true type is
 `image/png`). It is still harmless because: (6) it is renamed to an
 unpredictable name, and (7) it is stored outside the web root. Requested back
 through `view.php?...&cmd=id`, the response is the raw PNG bytes
-(`\x89PNG…IHDR`), **not** command output — the embedded PHP is never run.
+(`\x89PNG…IHDR`), **not** command output, the embedded PHP is never run.
 
-> [SCREENSHOT: terminal — polyglot ACCEPTED but ?cmd=id returns PNG bytes, not uid=]
+> [SCREENSHOT: terminal, polyglot ACCEPTED but ?cmd=id returns PNG bytes, not uid=]
 > `screenshots/11-secure-polyglot-neutralised.png`
 
 ### 4.3 Defence: disabling PHP execution in a directory (the alternative)
@@ -383,7 +383,7 @@ while the same shell in a normal folder executes:
 /planted_control.php?cmd=id             ->  uid=33(www-data) …               (executed)
 ```
 
-> [SCREENSHOT: terminal — hardened folder returns source, control folder returns uid=33]
+> [SCREENSHOT: terminal, hardened folder returns source, control folder returns uid=33]
 > `screenshots/12-apache-exec-disabled.png`
 
 **Outside web root vs execution-disabled:** storing outside the web root is the
@@ -427,18 +427,18 @@ move_uploaded_file($f['tmp_name'], '/var/uploads/'.$safe);
 
 An unrestricted file upload is one of the most damaging web weaknesses because
 it can lead directly to **Remote Code Execution**. This lab showed four
-concrete attacks against an insecure uploader — a web shell, a `Content-Type`
-spoof, an extension-blacklist bypass, and the magic-bytes problem — and then
+concrete attacks against an insecure uploader, a web shell, a `Content-Type`
+spoof, an extension-blacklist bypass, and the magic-bytes problem, and then
 defeated every one with a layered secure design.
 
 The key principles, each demonstrated:
 
-1. **Never trust client-supplied data** — not the filename, not the
+1. **Never trust client-supplied data**: not the filename, not the
    `Content-Type`. Read the file's real content with `finfo`.
-2. **Whitelist, don't blacklist** — allow a known-good set; deny everything else.
+2. **Whitelist, don't blacklist**: allow a known-good set; deny everything else.
 3. **Rename uploads** so the attacker controls neither the name nor the path.
 4. **Limit size** to prevent abuse.
-5. **Prevent execution** — store files outside the web root (strongest), or
+5. **Prevent execution**: store files outside the web root (strongest), or
    disable execution in the upload directory, ideally both.
 
 No single check is sufficient; security comes from **defence in depth**, so that
@@ -473,20 +473,20 @@ Layout:
 │   └── secure/
 │       ├── index.php                     # secure uploader (7 defences)
 │       └── view.php                      # safe retrieval
-└── storage/                              # /var/uploads — OUTSIDE the web root
+└── storage/                              # /var/uploads, OUTSIDE the web root
 ```
 
 ### Screenshot checklist
 
-- [ ] `screenshots/01-landing-page.png` — lab landing page at `127.0.0.1:4281`
-- [ ] `screenshots/02-vulnerable-form.png` — vulnerable upload form
-- [ ] `screenshots/03-webshell-cmd-id.png` — web shell running `id` (uid=www-data)
-- [ ] `screenshots/04-webshell-uploaded.png` — web shell upload confirmation
-- [ ] `screenshots/05-contenttype-bypass.png` — Content-Type spoof bypass
-- [ ] `screenshots/06-blacklist-bypass.png` — `.phtml` bypass + `.php.jpg` test
-- [ ] `screenshots/07-magic-bytes.png` — magic bytes vs claimed type (finfo)
-- [ ] `screenshots/08-secure-accept-image.png` — secure uploader accepts a real image
-- [ ] `screenshots/09-secure-view-image.png` — (optional) image served via view.php
-- [ ] `screenshots/10-secure-attacks-rejected.png` — all attacks rejected by secure version
-- [ ] `screenshots/11-secure-polyglot-neutralised.png` — polyglot accepted but inert
-- [ ] `screenshots/12-apache-exec-disabled.png` — execution disabled in hardened folder
+- [ ] `screenshots/01-landing-page.png`, lab landing page at `127.0.0.1:4281`
+- [ ] `screenshots/02-vulnerable-form.png`, vulnerable upload form
+- [ ] `screenshots/03-webshell-cmd-id.png`, web shell running `id` (uid=www-data)
+- [ ] `screenshots/04-webshell-uploaded.png`, web shell upload confirmation
+- [ ] `screenshots/05-contenttype-bypass.png`, Content-Type spoof bypass
+- [ ] `screenshots/06-blacklist-bypass.png`, `.phtml` bypass + `.php.jpg` test
+- [ ] `screenshots/07-magic-bytes.png`, magic bytes vs claimed type (finfo)
+- [ ] `screenshots/08-secure-accept-image.png`, secure uploader accepts a real image
+- [ ] `screenshots/09-secure-view-image.png`, (optional) image served via view.php
+- [ ] `screenshots/10-secure-attacks-rejected.png`, all attacks rejected by secure version
+- [ ] `screenshots/11-secure-polyglot-neutralised.png`, polyglot accepted but inert
+- [ ] `screenshots/12-apache-exec-disabled.png`, execution disabled in hardened folder
