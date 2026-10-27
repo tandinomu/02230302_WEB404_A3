@@ -11,8 +11,30 @@ defences that stop each attack. Everything runs locally in Docker, bound to
 
 ---
 
+## Overview — what this assignment does and how
+
+This assignment builds a file upload feature and secures it against malicious
+uploads.
+
+The approach has three stages:
+
+1. **Build an insecure uploader** — one that saves any uploaded file, under the
+   attacker's chosen name, into a web-accessible folder.
+2. **Attack it** — four attacks: upload and run a PHP web shell (Remote Code
+   Execution), bypass a naive `Content-Type` check, bypass a naive extension
+   blacklist, and the magic-bytes/polyglot problem.
+3. **Secure it** — rebuild the feature with seven layered defences (whitelist,
+   real content check, random rename, store outside the web root, etc.), and
+   show every earlier attack now failing.
+
+The core idea: **never trust what the client sends, and never let an uploaded
+file be executed.**
+
+---
+
 ## Table of contents
 
+0. [Overview](#overview--what-this-assignment-does-and-how)
 1. [Introduction: why file uploads are dangerous](#1-introduction-why-file-uploads-are-dangerous)
 2. [Lab setup and ethical considerations](#2-lab-setup-and-ethical-considerations)
 3. [The vulnerable version and the attacks](#3-the-vulnerable-version-and-the-attacks)
@@ -82,8 +104,8 @@ Then open `http://127.0.0.1:4281/` in a browser.
   `127.0.0.1:4281:80`, **not** `0.0.0.0`. Binding to the loopback address means
   the deliberately-vulnerable app is reachable **only from this machine** — it
   is never exposed to the network or the internet.
-- **No external targets.** Every attack in this report is run against my own
-  local container. No third-party system is scanned or attacked.
+- **No external targets.** Every attack in this report is run against a
+  local container only. No third-party system is scanned or attacked.
 - **Contained blast radius.** The vulnerable code runs inside a disposable
   Docker container, not on the host OS.
 - **Teaching artefacts only.** The web shell used below is a standard one-line
@@ -256,7 +278,7 @@ starts with `\x89PNG`, a GIF with `GIF89a`). PHP's `finfo` reads them.
    inspection beats trusting the header.
 2. But a *polyglot* that truly begins with `GIF89a` is reported as `image/gif`
    by `finfo` even though it hides PHP. So content inspection alone is not
-   enough — we must also whitelist extensions, rename files, and prevent
+   enough — the design must also whitelist extensions, rename files, and prevent
    execution. This motivates the layered design in Section 4.
 
 ---
@@ -293,7 +315,7 @@ move_uploaded_file($f['tmp_name'], '/var/uploads/' . $safeName);  // outside web
 ```
 
 Files are stored outside the web root, so they are served back through a small
-guarded script, `www/secure/view.php`, which accepts only our own random-name
+guarded script, `www/secure/view.php`, which accepts only the server's own random-name
 pattern (also blocking path traversal), sets a fixed `Content-Type`, adds
 `X-Content-Type-Options: nosniff`, and uses `readfile` — it never executes.
 
