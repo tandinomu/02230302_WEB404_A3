@@ -490,3 +490,14 @@ Layout:
 - [ ] `screenshots/10-secure-attacks-rejected.png`, all attacks rejected by secure version
 - [ ] `screenshots/11-secure-polyglot-neutralised.png`, polyglot accepted but inert
 - [ ] `screenshots/12-apache-exec-disabled.png`, execution disabled in hardened folder
+
+---
+
+## References
+
+- CWE-434: Unrestricted Upload of File with Dangerous Type, https://cwe.mitre.org/data/definitions/434.html
+- OWASP Top 10:2021, A04 Insecure Design, https://owasp.org/Top10/A04_2021-Insecure_Design/
+- OWASP Top 10:2021, A03 Injection, https://owasp.org/Top10/A03_2021-Injection/
+- OWASP Top 10:2021, A05 Security Misconfiguration, https://owasp.org/Top10/A05_2021-Security_Misconfiguration/
+- OWASP File Upload Cheat Sheet, https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html
+- OWASP Web Security Testing Guide (Testing for Upload of Malicious Files, WSTG-BUSL-09), https://owasp.org/www-project-web-security-testing-guide/
